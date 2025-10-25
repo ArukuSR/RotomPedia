@@ -39,7 +39,16 @@ class MainActivity : ComponentActivity() {
 @Composable
 fun AppNavigation() {
     val navController = rememberNavController()
-    NavHost(navController = navController, startDestination = "menu_screen") {
+    NavHost(navController = navController, startDestination = "login_screen") {
+        composable("login_screen") {
+            LoginScreen(
+                onLoginSuccess = {
+                    navController.navigate("menu_screen") {
+                        popUpTo("login_screen") { inclusive = true }
+                    }
+                }
+            )
+        }
         composable("menu_screen") {
             MenuPrincipalScreen(
                 onNavigateToPokedex = {
@@ -73,7 +82,7 @@ fun AppNavigation() {
 fun MenuPrincipalScreen(onNavigateToPokedex: () -> Unit) { // Ahora recibe una función para navegar
     Box(modifier = Modifier.fillMaxSize()) {
         Image(
-    painter = painterResource(id = R.drawable.rotomfondo),
+            painter = painterResource(id = R.drawable.rotomfondo),
             contentDescription = "Fondo de la aplicación",
             modifier = Modifier.fillMaxSize(),
             contentScale = ContentScale.FillBounds
