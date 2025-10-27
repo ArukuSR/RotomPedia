@@ -5,6 +5,8 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.*
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.Logout
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -46,6 +48,21 @@ fun AppNavigation() {
                     navController.navigate("menu_screen") {
                         popUpTo("login_screen") { inclusive = true }
                     }
+                },
+                onNavigateToRegister = {
+                    navController.navigate("register_screen")
+                }
+            )
+        }
+        composable("register_screen") {
+            RegisterScreen(
+                onRegisterSuccess = {
+                    navController.navigate("menu_screen") {
+                        popUpTo("login_screen") { inclusive = true }
+                    }
+                },
+                onNavigateToLogin = {
+                    navController.popBackStack()
                 }
             )
         }
@@ -53,6 +70,13 @@ fun AppNavigation() {
             MenuPrincipalScreen(
                 onNavigateToPokedex = {
                     navController.navigate("pokedex_screen")
+                },
+                onLogout = {
+                    navController.navigate("login_screen") {
+                        // Limpia la pila de navegación hasta el menú y lo incluye,
+                        // para que el usuario no pueda volver atrás.
+                        popUpTo("menu_screen") { inclusive = true }
+                    }
                 }
             )
         }
@@ -79,7 +103,7 @@ fun AppNavigation() {
 }
 
 @Composable
-fun MenuPrincipalScreen(onNavigateToPokedex: () -> Unit) { // Ahora recibe una función para navegar
+fun MenuPrincipalScreen(onNavigateToPokedex: () -> Unit, onLogout: () -> Unit) { // Añadido onLogout
     Box(modifier = Modifier.fillMaxSize()) {
         Image(
             painter = painterResource(id = R.drawable.rotomfondo),
@@ -87,6 +111,20 @@ fun MenuPrincipalScreen(onNavigateToPokedex: () -> Unit) { // Ahora recibe una f
             modifier = Modifier.fillMaxSize(),
             contentScale = ContentScale.FillBounds
         )
+
+        // Botón de Logout en la esquina superior derecha
+        IconButton(
+            onClick = onLogout,
+            modifier = Modifier
+                .align(Alignment.TopEnd)
+                .padding(16.dp)
+        ) {
+            Icon(
+                imageVector = Icons.AutoMirrored.Filled.Logout,
+                contentDescription = "Cerrar Sesión",
+                tint = Color(0xFF61DAF6) // Mismo color que el título para consistencia
+            )
+        }
 
         Column(
             modifier = Modifier
@@ -116,8 +154,11 @@ fun MenuPrincipalScreen(onNavigateToPokedex: () -> Unit) { // Ahora recibe una f
                     modifier = Modifier.weight(1f),
                     onClick = onNavigateToPokedex // <-- AQUI Hace la accion de navegar a la pagina donde esta la lista de la pokedex
                 )
-                MenuButton(text = "Objetos", modifier = Modifier.weight(1f))
+                // --- BOTÓN OCULTO ---
+                // MenuButton(text = "Objetos", modifier = Modifier.weight(1f))
             }
+            // --- FILA OCULTA ---
+            /*
             Spacer(modifier = Modifier.height(16.dp))
 
             // Fila 2
@@ -128,6 +169,7 @@ fun MenuPrincipalScreen(onNavigateToPokedex: () -> Unit) { // Ahora recibe una f
                 MenuButton(text = "Movimientos", modifier = Modifier.weight(1f))
                 MenuButton(text = "Localizaciones", modifier = Modifier.weight(1f))
             }
+            */
         }
     }
 }
@@ -151,6 +193,6 @@ fun MenuButton(
 @Composable
 fun DefaultPreview() {
     RotompediaTheme {
-        MenuPrincipalScreen(onNavigateToPokedex = {})
+        MenuPrincipalScreen(onNavigateToPokedex = {}, onLogout = {}) // Actualizado para el preview
     }
 }

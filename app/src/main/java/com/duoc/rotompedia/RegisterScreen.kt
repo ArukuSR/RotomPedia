@@ -15,9 +15,10 @@ import androidx.compose.ui.unit.dp
 import com.duoc.rotompedia.ui.theme.RotompediaTheme
 
 @Composable
-fun LoginScreen(onLoginSuccess: () -> Unit, onNavigateToRegister: () -> Unit) {
+fun RegisterScreen(onRegisterSuccess: () -> Unit, onNavigateToLogin: () -> Unit) {
     var username by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
+    var confirmPassword by remember { mutableStateOf("") }
     var error by remember { mutableStateOf("") }
 
     Box(modifier = Modifier.fillMaxSize()) {
@@ -38,8 +39,9 @@ fun LoginScreen(onLoginSuccess: () -> Unit, onNavigateToRegister: () -> Unit) {
             OutlinedTextField(
                 value = username,
                 onValueChange = { username = it },
-                label = { Text("Usuario") },
+                label = { Text("Elige un nombre de usuario") },
                 modifier = Modifier.fillMaxWidth(),
+                singleLine = true,
                 colors = OutlinedTextFieldDefaults.colors(
                     focusedBorderColor = Color(0xFF61DAF6),
                     unfocusedBorderColor = Color.Gray,
@@ -54,9 +56,10 @@ fun LoginScreen(onLoginSuccess: () -> Unit, onNavigateToRegister: () -> Unit) {
             OutlinedTextField(
                 value = password,
                 onValueChange = { password = it },
-                label = { Text("Contraseña") },
+                label = { Text("Crea una contraseña") },
                 modifier = Modifier.fillMaxWidth(),
                 visualTransformation = PasswordVisualTransformation(),
+                singleLine = true,
                 colors = OutlinedTextFieldDefaults.colors(
                     focusedBorderColor = Color(0xFF61DAF6),
                     unfocusedBorderColor = Color.Gray,
@@ -66,6 +69,25 @@ fun LoginScreen(onLoginSuccess: () -> Unit, onNavigateToRegister: () -> Unit) {
                     focusedLabelColor = Color.Black,
                     unfocusedLabelColor = Color.Gray,
                 )
+            )
+            Spacer(modifier = Modifier.height(16.dp))
+            OutlinedTextField(
+                value = confirmPassword,
+                onValueChange = { confirmPassword = it },
+                label = { Text("Confirma la contraseña") },
+                modifier = Modifier.fillMaxWidth(),
+                visualTransformation = PasswordVisualTransformation(),
+                singleLine = true,
+                colors = OutlinedTextFieldDefaults.colors(
+                    focusedBorderColor = Color(0xFF61DAF6),
+                    unfocusedBorderColor = Color.Gray,
+                    focusedTextColor = Color.Black,
+                    unfocusedTextColor = Color.Black,
+                    cursorColor = Color(0xFF61DAF6),
+                    focusedLabelColor = Color.Black,
+                    unfocusedLabelColor = Color.Gray,
+                ),
+                isError = error.isNotEmpty()
             )
             Spacer(modifier = Modifier.height(24.dp))
             if (error.isNotEmpty()) {
@@ -77,20 +99,23 @@ fun LoginScreen(onLoginSuccess: () -> Unit, onNavigateToRegister: () -> Unit) {
             }
             Button(
                 onClick = {
-                    // Lógica de login simple
-                    if (username == "admin" && password == "admin") {
-                        onLoginSuccess()
+                    if (username.isBlank() || password.isBlank()) {
+                        error = "Los campos no pueden estar vacíos"
+                    } else if (password != confirmPassword) {
+                        error = "Las contraseñas no coinciden"
                     } else {
-                        error = "Usuario o contraseña incorrectos"
+                        // Aquí iría la lógica para guardar el nuevo usuario
+                        println("Usuario '$username' registrado con éxito.")
+                        onRegisterSuccess()
                     }
                 },
                 modifier = Modifier.fillMaxWidth().height(50.dp),
                 colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF4E7DBF))
             ) {
-                Text("Iniciar Sesión")
+                Text("Registrarse")
             }
-            TextButton(onClick = onNavigateToRegister) {
-                Text("¿No tienes cuenta? Regístrate aquí", color = Color(0xFF61DAF6))
+            TextButton(onClick = onNavigateToLogin) {
+                Text("¿Ya tienes cuenta? Inicia sesión", color = Color(0xFF61DAF6))
             }
         }
     }
@@ -98,8 +123,8 @@ fun LoginScreen(onLoginSuccess: () -> Unit, onNavigateToRegister: () -> Unit) {
 
 @Preview(showBackground = true)
 @Composable
-fun LoginScreenPreview() {
+fun RegisterScreenPreview() {
     RotompediaTheme {
-        LoginScreen(onLoginSuccess = {}, onNavigateToRegister = {})
+        RegisterScreen(onRegisterSuccess = {}, onNavigateToLogin = {})
     }
 }
