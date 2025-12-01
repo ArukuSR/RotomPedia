@@ -1,0 +1,104 @@
+package com.duoc.rotompedia.viewmodel
+
+import android.app.Application
+import android.content.Context
+import androidx.lifecycle.AndroidViewModel
+import androidx.lifecycle.viewModelScope
+import com.duoc.rotompedia.data.local.Usuario
+import com.duoc.rotompedia.data.local.UsuarioDao
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.launch
+
+enum class AuthState {
+    IDLE, LOADING, REGISTRATION_SUCCESS, USER_EXISTS, EMAIL_EXISTS, INVALID_CREDENTIALS, EMPTY_FIELDS
+}
+
+sealed class UserSession {
+    data object Undetermined : UserSession()
+    data object Inactive : UserSession()
+    data class Active(val username: String) : UserSession()
+}
+
+// CAMBIO AQUÍ: Ahora recibe 'usuarioDao' en el constructor
+class AuthViewModel(
+    application: Application,
+    private val usuarioDao: UsuarioDao
+) : AndroidViewModel(application) {
+
+    private val sharedPreferences = application.getSharedPreferences("rotompedia_prefs", Context.MODE_PRIVATE)
+
+    private val _userSession = MutableStateFlow<UserSession>(UserSession.Undetermined)
+    val userSession = _userSession.asStateFlow()
+
+    private val _authState = MutableStateFlow<AuthState>(AuthState.IDLE)
+    val authState = _authState.asStateFlow()
+
+    companion object {
+        const val LOGGED_IN_USER_KEY = "logged_in_user"
+    }
+
+    // El resto de tu lógica sigue IGUAL...
+    fun checkSession() {
+        val savedUser = sharedPreferences.getString(LOGGED_IN_USER_KEY, null)
+        if (savedUser != null) {
+            _userSession.value = UserSession.Active(savedUser)
+        } else {
+            _userSession.value = UserSession.Inactive
+        }
+    }
+
+    fun iniciarSesion(nombreUsuario: String, contrasena: String, recordar: Boolean) {
+        viewModelScope.launch {
+            val usuario = usuarioDao.obtenerUsuarioPorNombre(nombreUsuario)
+            if (usuario != null && usuario.contrasena == contrasena) {
+                if (recordar) {
+                    sharedPreferences.edit().putString(LOGGED_IN_USER_KEY, nombreUsuario).apply()
+                }
+                _userSession.value = UserSession.Active(nombreUsuario)
+            } else {
+                _authState.value = AuthState.INVALID_CREDENTIALS
+            }
+        }
+    }
+
+    fun cerrarSesion() {
+        viewModelScope.launch {
+            sharedPreferences.edit().remove(LOGGED_IN_USER_KEY).apply()
+            _userSession.value = UserSession.Inactive
+            _authState.value = AuthState.IDLE
+        }
+    }
+
+    fun registrarUsuario(nombre: String, correo: String, contrasena: String) {
+        viewModelScope.launch {
+            _authState.value = AuthState.LOADING
+
+            if (nombre.isBlank() || correo.isBlank() || contrasena.isBlank()) {
+                _authState.value = AuthState.EMPTY_FIELDS
+                return@launch
+            }
+            if (usuarioDao.obtenerUsuarioPorNombre(nombre) != null) {
+                _authState.value = AuthState.USER_EXISTS
+                return@launch
+            }
+            if (usuarioDao.obtenerUsuarioPorCorreo(correo) != null) {
+                _authState.value = AuthState.EMAIL_EXISTS
+                return@launch
+            }
+
+            val nuevoUsuario = Usuario(
+                nombreUsuario = nombre,
+                correo = correo,
+                contrasena = contrasena
+            )
+            usuarioDao.insertarUsuario(nuevoUsuario)
+
+            _authState.value = AuthState.REGISTRATION_SUCCESS
+        }
+    }
+
+    fun resetAuthState() {
+        _authState.value = AuthState.IDLE
+    }
+}
