@@ -53,7 +53,7 @@ Este proyecto fue desarrollado colaborativamente utilizando GitFlow:
 
 * **[ZorVaK749](https://github.com/ZorVaK749)** (Lead Developer & Backend):
     * Desarrollo completo del Microservicio en Spring Boot.
-    * Implementación de la lógica de Pokédex, Favoritos (Room) y Mapas.
+    * Implementación de la lógica de Pokédex y Favoritos (Room).
     * Integración de Pruebas Unitarias (Mockito).
     * Diseño de UI/UX avanzado y lógica de ViewModels.
 
