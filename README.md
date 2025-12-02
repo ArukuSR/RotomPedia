@@ -61,6 +61,7 @@ Este proyecto fue desarrollado colaborativamente utilizando GitFlow:
     * Desarrollo inicial del módulo de Autenticación (Login/Registro).
     * Gestión del Repositorio y fusión de ramas.
     * **Generación y Firma del APK (Release):** Encargado de la creación del Keystore (`.jks`) y la compilación final del `app-release.apk` (IE 3.3.1).
+    * Implementacion de apartado de mapas regionales en la aplicacion.
 
 ## 🚀 Instalación y Ejecución
 
